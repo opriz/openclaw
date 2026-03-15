@@ -294,6 +294,7 @@ export const handleNodeEvent = async (ctx: NodeEventContext, nodeId: string, evt
       ctx.addChatRun(sessionId, {
         sessionKey: canonicalKey,
         clientRunId: `voice-${randomUUID()}`,
+        createdAt: 0,
       });
 
       void agentCommandFromIngress(

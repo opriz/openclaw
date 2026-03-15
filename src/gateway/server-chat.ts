@@ -5,6 +5,7 @@ import { loadConfig } from "../config/config.js";
 import { type AgentEventPayload, getAgentRunContext } from "../infra/agent-events.js";
 import { resolveHeartbeatVisibility } from "../infra/heartbeat-visibility.js";
 import { stripInlineDirectiveTagsForDisplay } from "../utils/directive-tags.js";
+import { CHAT_RUN_TTL_MS } from "./server-constants.js";
 import { loadSessionEntry } from "./session-utils.js";
 import { formatForLog } from "./ws-log.js";
 
@@ -134,29 +135,67 @@ function resolveMergedAssistantText(params: {
 export type ChatRunEntry = {
   sessionKey: string;
   clientRunId: string;
+  createdAt: number;
 };
 
 export type ChatRunRegistry = {
-  add: (sessionId: string, entry: ChatRunEntry) => void;
+  add: (sessionId: string, entry: Omit<ChatRunEntry, "createdAt"> & { createdAt?: number }) => void;
   peek: (sessionId: string) => ChatRunEntry | undefined;
   shift: (sessionId: string) => ChatRunEntry | undefined;
   remove: (sessionId: string, clientRunId: string, sessionKey?: string) => ChatRunEntry | undefined;
   clear: () => void;
 };
 
+function resolveChatRunTimeout(): number {
+  return CHAT_RUN_TTL_MS;
+}
+
 export function createChatRunRegistry(): ChatRunRegistry {
   const chatRunSessions = new Map<string, ChatRunEntry[]>();
 
-  const add = (sessionId: string, entry: ChatRunEntry) => {
-    const queue = chatRunSessions.get(sessionId);
-    if (queue) {
-      queue.push(entry);
-    } else {
-      chatRunSessions.set(sessionId, [entry]);
+  const prune = () => {
+    if (chatRunSessions.size === 0) {
+      return;
+    }
+    const now = Date.now();
+    const timeout = resolveChatRunTimeout();
+    for (const [sessionId, queue] of chatRunSessions) {
+      if (queue.length === 0) {
+        chatRunSessions.delete(sessionId);
+        continue;
+      }
+      // Keep head entry (active run) even if expired; only prune stale tail entries
+      const head = queue[0];
+      const tail = queue.slice(1).filter((entry) => now - entry.createdAt < timeout);
+      const filtered = [head, ...tail];
+      if (filtered.length < queue.length) {
+        chatRunSessions.set(sessionId, filtered);
+      }
     }
   };
 
-  const peek = (sessionId: string) => chatRunSessions.get(sessionId)?.[0];
+  const add = (
+    sessionId: string,
+    entry: Omit<ChatRunEntry, "createdAt"> & { createdAt?: number },
+  ) => {
+    // Always use current timestamp, ignore any passed createdAt
+    const fullEntry: ChatRunEntry = {
+      sessionKey: entry.sessionKey,
+      clientRunId: entry.clientRunId,
+      createdAt: Date.now(),
+    };
+    const queue = chatRunSessions.get(sessionId);
+    if (queue) {
+      queue.push(fullEntry);
+    } else {
+      chatRunSessions.set(sessionId, [fullEntry]);
+    }
+  };
+
+  const peek = (sessionId: string) => {
+    prune();
+    return chatRunSessions.get(sessionId)?.[0];
+  };
 
   const shift = (sessionId: string) => {
     const queue = chatRunSessions.get(sessionId);

@@ -78,6 +78,7 @@ describe("agent event handler", () => {
     harness.chatRunState.registry.add("run-1", {
       sessionKey: "session-1",
       clientRunId: "client-1",
+      createdAt: 0,
     });
     harness.handler({
       runId: "run-1",
@@ -203,7 +204,11 @@ describe("agent event handler", () => {
     const { broadcast, nodeSendToSession, chatRunState, handler, nowSpy } = createHarness({
       now: 2_000,
     });
-    chatRunState.registry.add("run-2", { sessionKey: "session-2", clientRunId: "client-2" });
+    chatRunState.registry.add("run-2", {
+      sessionKey: "session-2",
+      clientRunId: "client-2",
+      createdAt: 0,
+    });
 
     handler({
       runId: "run-2",
@@ -224,7 +229,11 @@ describe("agent event handler", () => {
     const { broadcast, nodeSendToSession, chatRunState, handler, nowSpy } = createHarness({
       now: 2_100,
     });
-    chatRunState.registry.add("run-3", { sessionKey: "session-3", clientRunId: "client-3" });
+    chatRunState.registry.add("run-3", {
+      sessionKey: "session-3",
+      clientRunId: "client-3",
+      createdAt: 0,
+    });
 
     for (const text of ["NO", "NO_", "NO_RE", "NO_REPLY"]) {
       handler({
@@ -247,7 +256,11 @@ describe("agent event handler", () => {
     const { broadcast, nodeSendToSession, chatRunState, handler, nowSpy } = createHarness({
       now: 2_200,
     });
-    chatRunState.registry.add("run-4", { sessionKey: "session-4", clientRunId: "client-4" });
+    chatRunState.registry.add("run-4", {
+      sessionKey: "session-4",
+      clientRunId: "client-4",
+      createdAt: 0,
+    });
 
     handler({
       runId: "run-4",
@@ -273,6 +286,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-flush", {
       sessionKey: "session-flush",
       clientRunId: "client-flush",
+      createdAt: 0,
     });
 
     handler({
@@ -317,6 +331,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-segmented", {
       sessionKey: "session-segmented",
       clientRunId: "client-segmented",
+      createdAt: 0,
     });
 
     handler({
@@ -363,6 +378,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-segmented-flush", {
       sessionKey: "session-segmented-flush",
       clientRunId: "client-segmented-flush",
+      createdAt: 0,
     });
 
     handler({
@@ -409,6 +425,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-no-dup-flush", {
       sessionKey: "session-no-dup-flush",
       clientRunId: "client-no-dup-flush",
+      createdAt: 0,
     });
 
     handler({
@@ -446,6 +463,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-cleanup", {
       sessionKey: "session-cleanup",
       clientRunId: "client-cleanup",
+      createdAt: 0,
     });
 
     handler({
@@ -487,6 +505,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-tool-flush", {
       sessionKey: "session-tool-flush",
       clientRunId: "client-tool-flush",
+      createdAt: 0,
     });
     registerAgentRunContext("run-tool-flush", {
       sessionKey: "session-tool-flush",
@@ -665,6 +684,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-fallback-internal", {
       sessionKey: "session-fallback",
       clientRunId: "run-fallback-client",
+      createdAt: 0,
     });
 
     emitFallbackLifecycle({ handler, runId: "run-fallback-internal" });
@@ -726,6 +746,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-tool-internal", {
       sessionKey: "session-tool-remap",
       clientRunId: "run-tool-client",
+      createdAt: 0,
     });
     registerAgentRunContext("run-tool-internal", {
       sessionKey: "session-tool-remap",
@@ -759,6 +780,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-heartbeat", {
       sessionKey: "session-heartbeat",
       clientRunId: "client-heartbeat",
+      createdAt: 0,
     });
     registerAgentRunContext("run-heartbeat", {
       sessionKey: "session-heartbeat",
@@ -795,6 +817,7 @@ describe("agent event handler", () => {
     chatRunState.registry.add("run-heartbeat-alert", {
       sessionKey: "session-heartbeat-alert",
       clientRunId: "client-heartbeat-alert",
+      createdAt: 0,
     });
     registerAgentRunContext("run-heartbeat-alert", {
       sessionKey: "session-heartbeat-alert",

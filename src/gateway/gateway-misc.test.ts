@@ -215,8 +215,8 @@ describe("chat run registry", () => {
   test("queues and removes runs per session", () => {
     const registry = createChatRunRegistry();
 
-    registry.add("s1", { sessionKey: "main", clientRunId: "c1" });
-    registry.add("s1", { sessionKey: "main", clientRunId: "c2" });
+    registry.add("s1", { sessionKey: "main", clientRunId: "c1", createdAt: 0 });
+    registry.add("s1", { sessionKey: "main", clientRunId: "c2", createdAt: 0 });
 
     expect(registry.peek("s1")?.clientRunId).toBe("c1");
     expect(registry.shift("s1")?.clientRunId).toBe("c1");
@@ -224,6 +224,35 @@ describe("chat run registry", () => {
 
     expect(registry.remove("s1", "c2")?.clientRunId).toBe("c2");
     expect(registry.peek("s1")).toBeUndefined();
+  });
+
+  test("prunes stale runs based on TTL to prevent OOM", () => {
+    const registry = createChatRunRegistry();
+    const now = Date.now();
+
+    // Mock Date.now to control time
+    vi.spyOn(Date, "now")
+      .mockReturnValueOnce(now) // c1 createdAt
+      .mockReturnValueOnce(now + 5 * 60 * 1000) // c2 createdAt
+      .mockReturnValueOnce(now + 12 * 60 * 1000) // c3 createdAt
+      .mockReturnValue(now + 16 * 60 * 1000); // prune time
+
+    registry.add("s1", { sessionKey: "main", clientRunId: "c1", createdAt: 0 });
+    registry.add("s1", { sessionKey: "main", clientRunId: "c2", createdAt: 0 });
+    registry.add("s1", { sessionKey: "main", clientRunId: "c3", createdAt: 0 });
+
+    // After 16 minutes:
+    // - c1 (head, 16 min old) kept despite being expired (active run protection)
+    // - c2 (tail, 11 min old) pruned (>10 min)
+    // - c3 (tail, 4 min old) kept (<10 min)
+    const result = registry.peek("s1");
+    expect(result?.clientRunId).toBe("c1");
+
+    registry.shift("s1");
+    const next = registry.peek("s1");
+    expect(next?.clientRunId).toBe("c3"); // c2 was pruned
+
+    vi.restoreAllMocks();
   });
 });
 

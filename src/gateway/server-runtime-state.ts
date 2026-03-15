@@ -82,7 +82,10 @@ export async function createGatewayRuntimeState(params: {
   chatRunState: ReturnType<typeof createChatRunState>;
   chatRunBuffers: Map<string, string>;
   chatDeltaSentAt: Map<string, number>;
-  addChatRun: (sessionId: string, entry: ChatRunEntry) => void;
+  addChatRun: (
+    sessionId: string,
+    entry: Omit<ChatRunEntry, "createdAt"> & { createdAt?: number },
+  ) => void;
   removeChatRun: (
     sessionId: string,
     clientRunId: string,
