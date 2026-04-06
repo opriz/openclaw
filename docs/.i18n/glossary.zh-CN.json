@@ -4,6 +4,34 @@
     "target": "OpenClaw"
   },
   {
+    "source": "Context Engine",
+    "target": "Context Engine"
+  },
+  {
+    "source": "Context Engineering",
+    "target": "上下文工程"
+  },
+  {
+    "source": "Context engineering",
+    "target": "上下文工程"
+  },
+  {
+    "source": "Context Engineering Runtime",
+    "target": "上下文工程运行时"
+  },
+  {
+    "source": "Context engineering runtime",
+    "target": "上下文工程运行时"
+  },
+  {
+    "source": "Dreaming System",
+    "target": "Dreaming 系统"
+  },
+  {
+    "source": "Dreaming system",
+    "target": "Dreaming 系统"
+  },
+  {
     "source": "Gateway",
     "target": "Gateway 网关"
   },
